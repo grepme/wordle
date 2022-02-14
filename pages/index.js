@@ -139,7 +139,7 @@ class CanvasConfetti extends React.Component {
 const GameOverWord = ({ word }) => {
   return (
     <div tw="text-white text-center">
-      The word was <strong>{word}</strong>, numbnuts
+      The word was <strong>{word}</strong>.
     </div>
   );
 };
