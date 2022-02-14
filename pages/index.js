@@ -200,7 +200,7 @@ export default function Home() {
       <div tw="p-20">
         {[0, 1, 2, 3, 4, 5].map((attemptRow) => {
           return (
-            <div tw="flex justify-center" index={attemptRow}>
+            <div tw="flex justify-center" key={attemptRow}>
               <Row attempt={attempt[attemptRow]} onEnter={checkGuess} />
             </div>
           );
