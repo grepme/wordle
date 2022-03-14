@@ -64,10 +64,7 @@ const Row = ({ onEnter, attempt }) => {
 
   useEffect(() => {
     if (inputRef.current !== null) {
-      inputRef.current.focus();
-      if (inputRef.current.prompt) {
-        inputRef.current.prompt();
-      }
+      setTimeout(() => inputRef.current.focus(), 0);
     }
   });
   useKeyPressEvent([], handleKeyPress);
@@ -115,6 +112,7 @@ class CanvasConfetti extends React.Component {
     super(props);
     this.canvas = React.createRef();
     this.confetti = null;
+    this.onClick = props.onClick;
   }
 
   componentDidMount() {
@@ -125,7 +123,7 @@ class CanvasConfetti extends React.Component {
     if (this.props.on) {
       this.confetti({ particleCount: 500, spread: 120 });
     }
-    return <Canvas ref={this.canvas} />;
+    return <Canvas ref={this.canvas} onClick={this.onClick} />;
   }
 }
 
