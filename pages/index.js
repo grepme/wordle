@@ -65,7 +65,9 @@ const Row = ({ onEnter, attempt }) => {
   useEffect(() => {
     if (inputRef.current !== null) {
       inputRef.current.focus();
-      inputRef.current.prompt();
+      if (inputRef.current.prompt) {
+        inputRef.current.prompt();
+      }
     }
   });
   useKeyPressEvent([], handleKeyPress);
