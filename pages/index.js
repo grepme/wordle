@@ -1,5 +1,5 @@
 import tw, { styled } from "twin.macro";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, forwardRef } from "react";
 import Head from "next/head";
 import Image from "next/image";
 import words from "../5words";
@@ -43,7 +43,7 @@ const LetterBox = ({ letter, bg }) => {
   );
 };
 
-const Row = ({ onEnter, attempt }) => {
+const Row = ({ onEnter, attempt, onToggleFocus }) => {
   const [currentWord, setCurrentWord] = useState(attempt.gussedWord);
   const inputRef = useRef(null);
 
@@ -65,6 +65,7 @@ const Row = ({ onEnter, attempt }) => {
   useEffect(() => {
     if (inputRef.current !== null) {
       setTimeout(() => inputRef.current.focus(), 0);
+      onToggleFocus(inputRef.current);
     }
   });
   useKeyPressEvent([], handleKeyPress);
@@ -149,6 +150,8 @@ export default function Home() {
     { index: 6, active: false, gussedWord: "", colors: [] },
   ]);
 
+  const [activeInput, setActiveInput] = useState(null);
+
   const checkGuess = (submittedWord) => {
     const colors = [];
     for (const [index, letter] of submittedWord.split("").entries()) {
@@ -181,8 +184,17 @@ export default function Home() {
     setAttempt(newGameState);
   };
 
+  const toggleFocusOnActiveInput = () => {
+    if (activeInput) {
+      activeInput.focus();
+    }
+  };
+
   return (
-    <div tw="bg-black w-screen h-screen">
+    <div
+      tw="bg-black w-screen h-screen"
+      onClick={() => toggleFocusOnActiveInput()}
+    >
       <Head>
         <title>Wordle</title>
         <meta name="description" content="Wordle, random" />
@@ -192,7 +204,11 @@ export default function Home() {
         {[0, 1, 2, 3, 4, 5].map((attemptRow) => {
           return (
             <div tw="flex justify-center" key={attemptRow}>
-              <Row attempt={attempt[attemptRow]} onEnter={checkGuess} />
+              <Row
+                attempt={attempt[attemptRow]}
+                onEnter={checkGuess}
+                onToggleFocus={setActiveInput}
+              />
             </div>
           );
         })}
