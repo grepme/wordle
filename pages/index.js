@@ -76,6 +76,7 @@ const Row = ({ onEnter, attempt }) => {
     <>
       {attempt.active && (
         <input
+          type="text"
           name={attempt.index}
           value={currentWord}
           autoFocus={true}
