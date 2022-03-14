@@ -80,7 +80,7 @@ const Row = ({ onEnter, attempt, onToggleFocus }) => {
           autoFocus={true}
           ref={inputRef}
           style={{ position: "fixed", top: 0, width: 0, height: 0 }}
-          onChange={handleInput}
+          onInput={handleInput}
         />
       )}
       {[0, 1, 2, 3, 4].map((letterPosition, index) => (
