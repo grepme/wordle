@@ -1,10 +1,12 @@
 import tw, { styled } from "twin.macro";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Head from "next/head";
 import Image from "next/image";
 import words from "../5words";
 import { useKeyPressEvent } from "react-use";
 const confetti = require("canvas-confetti");
+
+const re = /[a-z]+/g;
 
 const LetterBoxInput = tw.div`
   text-white
@@ -43,24 +45,42 @@ const LetterBox = ({ letter, bg }) => {
 
 const Row = ({ onEnter, attempt }) => {
   const [currentWord, setCurrentWord] = useState(attempt.gussedWord);
-  const [currentLine, setCurrentLine] = useState(0);
+  const inputRef = useRef(null);
 
   const handleKeyPress = (key) => {
     if (attempt.active) {
-      console.log(key);
-      if (chars.includes(key.key) && currentWord.length < 5) {
-        setCurrentWord(currentWord.concat(key.key));
-      } else if (key.key == "Backspace") {
-        setCurrentWord(currentWord.slice(0, -1));
-      } else if (key.key == "Enter" && currentWord.length == 5) {
+      if (key.key == "Enter" && currentWord.length == 5) {
         onEnter(currentWord);
       }
     }
   };
+  const handleInput = (event) => {
+    const value = event.target.value;
+    const match = value.match(re) || [""];
+    if (value.length <= 5) {
+      setCurrentWord(match[0]);
+    }
+  };
+
+  useEffect(() => {
+    if (inputRef.current !== null) {
+      inputRef.current.focus();
+    }
+  });
   useKeyPressEvent([], handleKeyPress);
 
   return (
     <>
+      {attempt.active && (
+        <input
+          name={attempt.index}
+          value={currentWord}
+          autoFocus={true}
+          ref={inputRef}
+          style={{ position: "fixed", top: 0, width: 0, height: 0 }}
+          onChange={handleInput}
+        />
+      )}
       {[0, 1, 2, 3, 4].map((letterPosition, index) => (
         <LetterBox
           bg={
@@ -80,36 +100,6 @@ const Row = ({ onEnter, attempt }) => {
   );
 };
 
-// we can't use keyCodes or charAt because it's deprecated
-const chars = [
-  "a",
-  "b",
-  "c",
-  "d",
-  "e",
-  "f",
-  "g",
-  "h",
-  "i",
-  "j",
-  "k",
-  "l",
-  "m",
-  "n",
-  "o",
-  "p",
-  "q",
-  "r",
-  "s",
-  "t",
-  "u",
-  "v",
-  "w",
-  "x",
-  "y",
-  "z",
-];
-
 const Canvas = styled.canvas({
   ...tw`h-screen absolute top-0`,
   width: "100vw",
@@ -125,7 +115,6 @@ class CanvasConfetti extends React.Component {
 
   componentDidMount() {
     this.confetti = confetti.create(this.canvas.current, { resize: true });
-    // this.confetti({ particleCount: 500, spread: 120 });
   }
 
   render() {
@@ -150,12 +139,12 @@ export default function Home() {
   );
   const [gameOver, setGameOver] = useState(false);
   const [attempt, setAttempt] = useState([
-    { active: true, gussedWord: "", colors: [] },
-    { active: false, gussedWord: "", colors: [] },
-    { active: false, gussedWord: "", colors: [] },
-    { active: false, gussedWord: "", colors: [] },
-    { active: false, gussedWord: "", colors: [] },
-    { active: false, gussedWord: "", colors: [] },
+    { index: 1, active: true, gussedWord: "", colors: [] },
+    { index: 2, active: false, gussedWord: "", colors: [] },
+    { index: 3, active: false, gussedWord: "", colors: [] },
+    { index: 4, active: false, gussedWord: "", colors: [] },
+    { index: 5, active: false, gussedWord: "", colors: [] },
+    { index: 6, active: false, gussedWord: "", colors: [] },
   ]);
 
   const checkGuess = (submittedWord) => {
