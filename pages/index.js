@@ -51,15 +51,21 @@ const Row = ({ onEnter, attempt, onToggleFocus }) => {
     if (attempt.active) {
       if (key.key == "Enter" && currentWord.length == 5) {
         onEnter(currentWord);
+      } else {
+        updateValue(inputRef.current.value);
       }
     }
   };
-  const handleInput = (event) => {
-    const value = event.target.value;
+
+  const updateValue = (value) => {
     const match = value.match(re) || [""];
     if (value.length <= 5) {
       setCurrentWord(match[0]);
     }
+  };
+
+  const handleInput = (event) => {
+    updateValue(event.target.value);
   };
 
   useEffect(() => {
@@ -80,7 +86,7 @@ const Row = ({ onEnter, attempt, onToggleFocus }) => {
           autoFocus={true}
           ref={inputRef}
           style={{ position: "fixed", top: 0, width: 0, height: 0 }}
-          onInput={handleInput}
+          onChange={handleInput}
         />
       )}
       {[0, 1, 2, 3, 4].map((letterPosition, index) => (
