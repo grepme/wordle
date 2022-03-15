@@ -6,16 +6,18 @@ import words from "../5words";
 import { useKeyPressEvent } from "react-use";
 const confetti = require("canvas-confetti");
 
-const re = /[a-z]+/g;
+const re = /[a-zA-Z]+/g;
 
 const LetterBoxInput = tw.div`
   text-white
   font-bold
-  text-5xl
   width[2ch]
+  max-width[calc(min(10ch, 100%))]
   min-height[1.8ch]
   text-center
+  text-3xl
   capitalize
+  lg:(text-5xl)
 `;
 
 const LetterBoxWrapper = styled.div({
@@ -51,8 +53,6 @@ const Row = ({ onEnter, attempt, onToggleFocus }) => {
     if (attempt.active) {
       if (key.key == "Enter" && currentWord.length == 5) {
         onEnter(currentWord);
-      } else {
-        updateValue(inputRef.current.value);
       }
     }
   };
@@ -70,21 +70,21 @@ const Row = ({ onEnter, attempt, onToggleFocus }) => {
 
   useEffect(() => {
     if (inputRef.current !== null) {
-      setTimeout(() => inputRef.current.focus(), 0);
       onToggleFocus(inputRef.current);
     }
   });
   useKeyPressEvent([], handleKeyPress);
-
   return (
     <>
       {attempt.active && (
         <input
           type="text"
+          key={attempt.index}
           name={attempt.index}
           value={currentWord}
           autoFocus={true}
           ref={inputRef}
+          autoComplete="off"
           style={{ position: "fixed", top: 0, width: 0, height: 0 }}
           onChange={handleInput}
         />
@@ -206,11 +206,12 @@ export default function Home() {
         <meta name="description" content="Wordle, random" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div tw="p-20">
+      <div tw="lg:(p-20) p-2">
         {[0, 1, 2, 3, 4, 5].map((attemptRow) => {
           return (
             <div tw="flex justify-center" key={attemptRow}>
               <Row
+                key={attemptRow}
                 attempt={attempt[attemptRow]}
                 onEnter={checkGuess}
                 onToggleFocus={setActiveInput}
