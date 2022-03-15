@@ -1,7 +1,7 @@
 import tw, { styled } from "twin.macro";
-import React, { useState, useRef, useEffect, forwardRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Head from "next/head";
-import Image from "next/image";
+import { cloneDeep } from "lodash-es";
 import words from "../5words";
 import { useKeyPressEvent } from "react-use";
 const confetti = require("canvas-confetti");
@@ -19,6 +19,10 @@ const LetterBoxInput = tw.div`
   capitalize
   lg:(text-5xl)
 `;
+
+const RetryButton = styled.button({
+  ...tw`bg-purple-500 rounded-lg p-3 text-white text-2xl cursor-pointer`,
+});
 
 const LetterBoxWrapper = styled.div({
   ...tw`border-purple-500 border-2 p-2`,
@@ -46,8 +50,8 @@ const LetterBox = ({ letter, bg }) => {
 };
 
 const Row = ({ onEnter, attempt, onToggleFocus }) => {
-  const [currentWord, setCurrentWord] = useState(attempt.gussedWord);
   const inputRef = useRef(null);
+  const [currentWord, setCurrentWord] = useState(attempt.gussedWord);
 
   const handleKeyPress = (key) => {
     if (attempt.active) {
@@ -72,15 +76,14 @@ const Row = ({ onEnter, attempt, onToggleFocus }) => {
     if (inputRef.current !== null) {
       onToggleFocus(inputRef.current);
     }
-  });
+  }, []);
+
   useKeyPressEvent([], handleKeyPress);
   return (
     <>
       {attempt.active && (
         <input
           type="text"
-          key={attempt.index}
-          name={attempt.index}
           value={currentWord}
           autoFocus={true}
           ref={inputRef}
@@ -136,27 +139,52 @@ class CanvasConfetti extends React.Component {
 
 const GameOverWord = ({ word }) => {
   return (
-    <div tw="text-white text-center">
+    <div tw="text-white text-center mb-2">
       The word was <strong>{word}</strong>.
     </div>
   );
 };
 
-export default function Home() {
-  const [word, setWord] = useState(
-    words[Math.floor(Math.random() * words.length)]
-  );
-  const [gameOver, setGameOver] = useState(false);
-  const [attempt, setAttempt] = useState([
+const Rows = ({ attempts, checkGuess, setActiveInput }) => {
+  return attempts.map((attemptRow) => {
+    return (
+      <div tw="flex justify-center" key={attemptRow.index}>
+        <Row
+          attempt={attemptRow}
+          onEnter={checkGuess}
+          onToggleFocus={setActiveInput}
+        />
+      </div>
+    );
+  });
+};
+
+const newGameState = () => {
+  return [
     { index: 1, active: true, gussedWord: "", colors: [] },
     { index: 2, active: false, gussedWord: "", colors: [] },
     { index: 3, active: false, gussedWord: "", colors: [] },
     { index: 4, active: false, gussedWord: "", colors: [] },
     { index: 5, active: false, gussedWord: "", colors: [] },
     { index: 6, active: false, gussedWord: "", colors: [] },
-  ]);
+  ];
+};
 
+export default function Home() {
+  const [word, setWord] = useState("");
+  const [attempt, setAttempt] = useState([]);
+  const [gameOver, setGameOver] = useState(false);
   const [activeInput, setActiveInput] = useState(null);
+  const [gameID, setGameID] = useState("");
+
+  const randomWord = () => words[Math.floor(Math.random() * words.length)];
+
+  const resetGame = () => {
+    setGameID(Math.random().toString());
+    setWord(randomWord());
+    setAttempt(newGameState());
+    setGameOver(false);
+  };
 
   const checkGuess = (submittedWord) => {
     const colors = [];
@@ -196,6 +224,10 @@ export default function Home() {
     }
   };
 
+  useEffect(() => {
+    resetGame();
+  }, []);
+
   return (
     <div
       tw="bg-black w-screen h-screen"
@@ -207,23 +239,24 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div tw="lg:(p-20) p-2">
-        {[0, 1, 2, 3, 4, 5].map((attemptRow) => {
-          return (
-            <div tw="flex justify-center" key={attemptRow}>
-              <Row
-                key={attemptRow}
-                attempt={attempt[attemptRow]}
-                onEnter={checkGuess}
-                onToggleFocus={setActiveInput}
-              />
-            </div>
-          );
-        })}
+        <Rows
+          key={gameID}
+          attempts={attempt}
+          checkGuess={checkGuess}
+          setActiveInput={setActiveInput}
+        />
       </div>
-      <div tw="flex justify-center w-full">
+      <div tw="flex justify-center w-full cursor-not-allowed pointer-events-none">
         <CanvasConfetti on={gameOver == "win"} />
       </div>
-      {gameOver == "lose" ? <GameOverWord word={word} /> : null}
+      {gameOver == "lose" ? (
+        <>
+          <GameOverWord word={word} />
+          <div tw="flex justify-center w-full">
+            <RetryButton onClick={resetGame}>Retry</RetryButton>
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }
